@@ -30,6 +30,10 @@ func (m *MicroClient) GetService(serviceName string) *client.Service {
 	return m.clientMap[serviceName]
 }
 
+func (m *MicroClient) AddListener(l ChangeListener) {
+	m.Listeners = append(m.Listeners, l)
+}
+
 func (m *MicroClient) Start() {
 	c := m.Cfg
 	regErr := m.registerApp()
