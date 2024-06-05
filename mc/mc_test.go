@@ -1,7 +1,9 @@
 package mc
 
 import (
+	"context"
 	"fmt"
+	"github.com/grdisx/micro-conf-go/client"
 	"testing"
 	"time"
 
@@ -19,11 +21,15 @@ heartbeat-timeout: 10
 token: 03120382109Ha
 meta:
   zone: hz
+  tags: beta,test
 service:
-  enabled: false
+  enabled: true
 clients:
   - name: OrderService
     group: default
+    tags: test
+    zone: hz
+    timeout: 10
 `
 
 func TestStart(t *testing.T) {
@@ -70,11 +76,20 @@ func TestConfig(t *testing.T) {
 	demo := new(DemoStruct)
 
 	ticker := time.Tick(time.Second * 5)
+	orderService := client.GetClient("OrderService")
+	count := 3
 	for {
 		select {
 		case <-ticker:
+			if count <= 0 {
+				return
+			}
 			client1.GetObject("demo", demo)
 			fmt.Println(demo.Name, demo.Id)
+			if resp, err := orderService.Get(context.Background(), "/api/ping"); err != nil {
+				fmt.Println(err.Error(), resp)
+			}
+			count--
 		}
 	}
 }

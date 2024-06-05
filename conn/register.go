@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/grdisx/micro-conf-go/utils"
 	"io"
 	"net/http"
 	"strings"
@@ -17,8 +18,9 @@ func (r *RegAppPayload) toPayload() io.Reader {
 	return bytes.NewReader(d)
 }
 
+// RegApp TODO add sign related logic
 func RegApp(payload *RegAppPayload, metaServers, token string) error {
-	chosenServer := chooseAddr(metaServers)
+	chosenServer := utils.ChooseAddr(metaServers)
 	url := fmt.Sprintf(addr, chosenServer)
 	resp, err := http.Post(url, "application/json", payload.toPayload())
 	if err != nil {

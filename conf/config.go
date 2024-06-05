@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/grdisx/micro-conf-go/utils"
 	"io"
-	"math/rand"
 	"net/http"
 	"strings"
 	"sync"
@@ -31,9 +31,10 @@ type ConfigContext struct {
 }
 
 // Load is called once when application start up
+// TODO add sign related
 func (c *ConfigContext) Load(req *NamespaceClientRequest, metaServers string) error {
 	// choose addr, then add some
-	server := chooseAddr(metaServers)
+	server := utils.ChooseAddr(metaServers)
 	addr := fmt.Sprintf("http://%s/api/cfg/app", server)
 	d, err := json.Marshal(req)
 	if err != nil {
@@ -69,10 +70,4 @@ func (c *ConfigContext) get(key string) (string, error) {
 		}
 	}
 	return "", errors.New("not found")
-}
-
-func chooseAddr(metaServers string) string {
-	addrArr := strings.Split(metaServers, ",")
-	idx := rand.Intn(len(addrArr))
-	return addrArr[idx]
 }

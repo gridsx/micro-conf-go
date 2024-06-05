@@ -20,10 +20,10 @@ type MicroClient struct {
 	SocketMgr *conn.WebsocketMgr
 	Listeners []ChangeListener
 	context   *conf2.ConfigContext
-	clientMap map[string]*client.Service
+	clientMap map[string]*client.Client
 }
 
-func (m *MicroClient) GetService(serviceName string) *client.Service {
+func (m *MicroClient) GetService(serviceName string) *client.Client {
 	if m.clientMap == nil {
 		return nil
 	}
@@ -50,7 +50,7 @@ func (m *MicroClient) Start() {
 
 	// 如果开启了客户端，需要构造刷新
 	if len(m.Cfg.Clients) > 0 {
-		m.refreshClients()
+		m.initClients()
 	}
 
 	mgr := conn.InitSocketMgr(c.MetaServers, c.Id, c.Token, c.Port)
@@ -108,8 +108,13 @@ func (m *MicroClient) acceptConfigChange() {
 }
 
 // 获取服务列表， 拿出来status是UP的，然后进行筛选
-func (m *MicroClient) refreshClients() {
-	// TODO  refresh clients
+func (m *MicroClient) initClients() {
+	for _, v := range m.Cfg.Clients {
+		filters := make(map[string]string, defaultSize)
+		filters["tags"] = v.Tags
+		filters["zone"] = v.Zone
+		client.NewClient(v.Name, v.Group, m.Cfg.MetaServers, filters, v.Headers, v.Lease, v.Timeout, v.RateLimit)
+	}
 }
 
 func NewClient(c *MicroConf) *MicroClient {

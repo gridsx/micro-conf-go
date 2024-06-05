@@ -2,12 +2,16 @@ package utils
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
 	"strings"
+
+	"github.com/winjeg/go-commons/log"
 )
 
 var (
-	ip = getHostIp()
+	ip     = getHostIp()
+	logger = log.GetLogger(nil)
 )
 
 func getHostIp() string {
@@ -24,4 +28,13 @@ func getHostIp() string {
 
 func GetIP() string {
 	return ip
+}
+
+func ChooseAddr(metaServers string) string {
+	addrArr := strings.Split(metaServers, ",")
+	if len(addrArr) < 1 {
+		logger.Panic("ChooseAddr - meta server address incorrect")
+	}
+	idx := rand.Intn(len(addrArr))
+	return addrArr[idx]
 }

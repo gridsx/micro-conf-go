@@ -15,12 +15,14 @@ const (
 
 // ClientConfig 服务下线不会主动通知 ，因此正常下线要先把state设置为down超过调用方的lease后才可真正关闭服务
 type ClientConfig struct {
-	Name      string `json:"name,omitempty" yaml:"name"`           // 调用的服务名
-	Group     string `json:"group,omitempty" yaml:"group"`         // 调用服务的分组， 不写默认为 default
-	Lease     int64  `json:"lease,omitempty" yaml:"lease"`         // 本地缓存的服务的过期时间，即刷新时间， 推荐小于对应服务的心跳时间
-	Tags      string `json:"tags,omitempty" yaml:"tags"`           // 筛选的tag， 只调用具备相应tag的节点， 不写则为全部
-	Zones     string `json:"zones,omitempty" yaml:"zones"`         // 筛选的zone，只调用具备相应zone的节点， 不写则为全部
-	RateLimit int    `json:"rateLimit,omitempty" yaml:"rateLimit"` //总限速， 超过限速会返回error， 小于0 或者不写均为不限速
+	Name      string            `json:"name,omitempty" yaml:"name"`           // 调用的服务名
+	Group     string            `json:"group,omitempty" yaml:"group"`         // 调用服务的分组， 不写默认为 default
+	Lease     int               `json:"lease,omitempty" yaml:"lease"`         // 本地缓存的服务的过期时间，即刷新时间， 推荐小于对应服务的心跳时间
+	Tags      string            `json:"tags,omitempty" yaml:"tags"`           // 筛选的tag， 只调用具备相应tag的节点， 不写则为全部
+	Zone      string            `json:"zone,omitempty" yaml:"zone"`           // 筛选的zone，只调用具备相应zone的节点， 不写则为全部
+	RateLimit int               `json:"rateLimit,omitempty" yaml:"rateLimit"` //总限速， 超过限速会返回error， 小于0 或者不写均为不限速
+	Timeout   int               `json:"timeout,omitempty" yaml:"timeout"`     // 客户端http超时
+	Headers   map[string]string `json:"headers,omitempty" yaml:"headers"`     // 客户端固定传输的headers
 }
 
 type ServiceConfig struct {

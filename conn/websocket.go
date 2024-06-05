@@ -6,10 +6,8 @@ import (
 	"github.com/grdisx/micro-conf-go/utils"
 	"github.com/winjeg/go-commons/log"
 	"io"
-	"math/rand"
 	"os"
 	"os/signal"
-	"strings"
 )
 
 var (
@@ -52,16 +50,7 @@ func (m *WebsocketMgr) Recv() chan []byte {
 }
 
 func (m *WebsocketMgr) chooseAddr() string {
-	return chooseAddr(m.metaServers)
-}
-
-func chooseAddr(metaServers string) string {
-	addrArr := strings.Split(metaServers, ",")
-	if len(addrArr) < 1 {
-		logger.Panic("chooseAddr - meta server address incorrect")
-	}
-	idx := rand.Intn(len(addrArr))
-	return addrArr[idx]
+	return utils.ChooseAddr(m.metaServers)
 }
 
 func (m *WebsocketMgr) composeConnKey() string {
