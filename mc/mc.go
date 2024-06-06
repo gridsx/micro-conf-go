@@ -3,11 +3,11 @@ package mc
 import (
 	"encoding/json"
 	"errors"
-	"github.com/grdisx/micro-conf-go/client"
-	conf2 "github.com/grdisx/micro-conf-go/conf"
 	"sync"
 	"time"
 
+	"github.com/grdisx/micro-conf-go/client"
+	"github.com/grdisx/micro-conf-go/conf"
 	"github.com/grdisx/micro-conf-go/conn"
 )
 
@@ -19,7 +19,7 @@ type MicroClient struct {
 	Cfg       *MicroConf
 	SocketMgr *conn.WebsocketMgr
 	Listeners []ChangeListener
-	context   *conf2.ConfigContext
+	context   *conf.ConfigContext
 	clientMap map[string]*client.Client
 }
 
@@ -42,10 +42,10 @@ func (m *MicroClient) Start() {
 	}
 
 	// 配置中心相关， 开机load并加监听
-	m.context = &conf2.ConfigContext{Data: map[string]map[string]string{}, Lock: sync.Mutex{}}
+	m.context = &conf.ConfigContext{Data: map[string]map[string]string{}, Lock: sync.Mutex{}}
 	if m.Cfg.CfgEnabled() {
-		m.context.Load(m.Cfg.NamespaceReq(), m.Cfg.MetaServers)
-		m.Listeners = append(m.Listeners, conf2.DefaultConfigListener(m.context))
+		m.context.Load(m.Cfg.NamespaceReq(), m.Cfg.MetaServers, m.Cfg.Token)
+		m.Listeners = append(m.Listeners, conf.DefaultConfigListener(m.context))
 	}
 
 	// 如果开启了客户端，需要构造刷新
@@ -113,7 +113,8 @@ func (m *MicroClient) initClients() {
 		filters := make(map[string]string, defaultSize)
 		filters["tags"] = v.Tags
 		filters["zone"] = v.Zone
-		client.NewClient(v.Name, v.Group, m.Cfg.MetaServers, filters, v.Headers, v.Lease, v.Timeout, v.RateLimit)
+		client.NewClient(v.Name, v.Group, m.Cfg.MetaServers, m.Cfg.Token,
+			filters, v.Headers, v.Lease, v.Timeout, v.RateLimit)
 	}
 }
 

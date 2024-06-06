@@ -3,11 +3,13 @@ package conn
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/grdisx/micro-conf-go/auth"
 	"github.com/grdisx/micro-conf-go/utils"
 	"github.com/winjeg/go-commons/log"
 	"io"
 	"os"
 	"os/signal"
+	"time"
 )
 
 var (
@@ -62,10 +64,12 @@ func (m *WebsocketMgr) connect() {
 	for {
 		chosenAddr := m.chooseAddr()
 		connKey := m.composeConnKey()
-		c, resp, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s/api/ws?key=%s",
-			chosenAddr, connKey), nil)
+		url := fmt.Sprintf("ws://%s/api/ws?key=%s", chosenAddr, connKey)
+		url = auth.BuildUrlParams(url, m.appId, m.token)
+		c, resp, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			logger.Warningln("websocket connect  error: " + err.Error())
+			time.Sleep(time.Second)
 		} else {
 			_, _ = io.ReadAll(resp.Body)
 			logger.Infof("Connect - websocket connected from :  " + connKey)

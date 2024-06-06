@@ -32,13 +32,13 @@ type Client struct {
 	instNum       atomic.Int32
 }
 
-func (s *Client) init(metaServers string) error {
+func (s *Client) init(metaServers, token string) error {
 	if s.Timeout <= 0 {
 		s.Timeout = defaultTimeout
 	}
 	client := &http.Client{Timeout: time.Duration(s.Timeout) * time.Second}
 	s.Client = client
-	s.getInstances(metaServers)
+	s.getInstances(metaServers, token)
 	if len(s.Instances) == 0 {
 		logger.Errorf("error getting meta info for svc:%s, group:%s\n", s.Name, s.Group)
 		return errors.New(fmt.Sprintf("no instances for svc: %s, group:%s", s.Name, s.Group))
@@ -48,16 +48,16 @@ func (s *Client) init(metaServers string) error {
 		for {
 			select {
 			case <-ticker:
-				s.getInstances(metaServers)
+				s.getInstances(metaServers, token)
 			}
 		}
 	}()
 	return nil
 }
 
-func (s *Client) getInstances(metaServers string) {
+func (s *Client) getInstances(metaServers, token string) {
 	addr := utils.ChooseAddr(metaServers)
-	metas := getServiceMeta(addr, s.Name, s.Group, s.Client)
+	metas := getServiceMeta(addr, s.Name, s.Group, token)
 	if len(metas) == 0 {
 		logger.Errorf("error getting meta info for svc:%s, group:%s\n", s.Name, s.Group)
 		return
@@ -83,11 +83,11 @@ func (s *Client) choose() (string, error) {
 }
 
 func (s *Client) Get(ctx context.Context, uri string) (*http.Response, error) {
-	return s.request(ctx, http.MethodPut, uri, nil, []string{})
+	return s.request(ctx, http.MethodGet, uri, nil, []string{})
 }
 
 func (s *Client) GetWithParams(ctx context.Context, uri string, params ...string) (*http.Response, error) {
-	return s.request(ctx, http.MethodPut, uri, nil, params)
+	return s.request(ctx, http.MethodGet, uri, nil, params)
 }
 
 func (s *Client) Post(ctx context.Context, uri string, body io.Reader, params ...string) (*http.Response, error) {

@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/grdisx/micro-conf-go/client"
+	"io"
+	"log"
+	"net/http"
 	"testing"
 	"time"
 
@@ -18,7 +21,7 @@ port: 8080
 namespaces: app.props
 group: default
 heartbeat-timeout: 10
-token: 03120382109Ha
+token: 8kA1W63KOSOXs6x9z8q40w9MXRjZJb9k
 meta:
   zone: hz
   tags: beta,test
@@ -59,6 +62,9 @@ func TestConfig(t *testing.T) {
 		t.FailNow()
 		return
 	}
+
+	go serveHttp(conf.Port)
+
 	client1 := NewClient(conf)
 	client1.Start()
 	_, intErr := client1.GetInt("app.id")
@@ -86,10 +92,31 @@ func TestConfig(t *testing.T) {
 			}
 			client1.GetObject("demo", demo)
 			fmt.Println(demo.Name, demo.Id)
-			if resp, err := orderService.Get(context.Background(), "/api/ping"); err != nil {
-				fmt.Println(err.Error(), resp)
+			resp, err := orderService.Get(context.Background(), "/api/ping")
+			if err != nil {
+				fmt.Println(err.Error())
+			} else {
+				d, _ := io.ReadAll(resp.Body)
+				fmt.Println(string(d))
 			}
 			count--
 		}
+	}
+}
+
+// w表示response对象，返回给客户端的内容都在对象里处理
+// r表示客户端请求对象，包含了请求头，请求参数等等
+func ping(w http.ResponseWriter, r *http.Request) {
+	// 往w里写入内容，就会在浏览器里输出
+	fmt.Fprintf(w, "pong")
+}
+
+func serveHttp(port int) {
+	// 设置路由，如果访问/，则调用index方法
+	http.HandleFunc("/api/ping", ping)
+	// 启动web服务，监听9090端口
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
 	}
 }

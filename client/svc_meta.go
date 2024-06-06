@@ -2,10 +2,9 @@ package client
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"github.com/grdisx/micro-conf-go/auth"
 	"net/http"
 	"strings"
 
@@ -33,7 +32,7 @@ type ServiceInfo struct {
 	HeartbeatTimeout int                    `json:"timeout,omitempty"`
 }
 
-func getServiceMeta(instance, app, group string, client *http.Client) []ServiceInfo {
+func getServiceMeta(instance, app, group, token string) []ServiceInfo {
 	url := fmt.Sprintf("http://%s/api/svc/instances", instance)
 	info := ServiceInfo{App: app, Group: group}
 	d, err := json.Marshal(info)
@@ -41,30 +40,21 @@ func getServiceMeta(instance, app, group string, client *http.Client) []ServiceI
 		logger.Errorf("getServiceMeta - json error: %s\n", err.Error())
 		return nil
 	}
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, bytes.NewReader(d))
+	cli := auth.DefaultClient(app, token)
+	resp, err := cli.Post(url, bytes.NewReader(d), http.Header{"Content-Type": []string{"application/json"}})
 	if err != nil {
-		logger.Errorf("getServiceMeta - request error: %s\n", err.Error())
-		return nil
-	}
-	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
 		logger.Errorf("getServiceMeta - remote call error:  %+v\n", err)
-		return nil
-	}
-	respData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		logger.Errorf("getServiceMeta - read resp error: %s\n", err.Error())
 		return nil
 	}
 
 	svcRet := new(SvcRet)
-	if err := json.Unmarshal(respData, svcRet); err != nil {
-		logger.Errorf("getServiceMeta - err unmarshal resp data: %s\n", string(respData))
+	if err := json.Unmarshal([]byte(resp), svcRet); err != nil {
+		logger.Errorf("getServiceMeta - err unmarshal resp data: %s\n", resp)
 		return nil
 	}
 
 	if svcRet.Code != "0" {
-		logger.Errorf("getServiceMeta - err unmarshal resp data: %s\n", string(respData))
+		logger.Errorf("getServiceMeta - err unmarshal resp data: %s\n", resp)
 		return nil
 	}
 	return svcRet.Data

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/grdisx/micro-conf-go/auth"
 	"github.com/grdisx/micro-conf-go/utils"
-	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -31,8 +31,7 @@ type ConfigContext struct {
 }
 
 // Load is called once when application start up
-// TODO add sign related
-func (c *ConfigContext) Load(req *NamespaceClientRequest, metaServers string) error {
+func (c *ConfigContext) Load(req *NamespaceClientRequest, metaServers, token string) error {
 	// choose addr, then add some
 	server := utils.ChooseAddr(metaServers)
 	addr := fmt.Sprintf("http://%s/api/cfg/app", server)
@@ -40,20 +39,13 @@ func (c *ConfigContext) Load(req *NamespaceClientRequest, metaServers string) er
 	if err != nil {
 		return err
 	}
-
-	resp, respErr := http.Post(addr, "application/json", bytes.NewReader(d))
+	cli := auth.DefaultClient(req.AppId, token)
+	resp, respErr := cli.Post(addr, bytes.NewReader(d), http.Header{"Content-Type": []string{"application/json"}})
 	if respErr != nil {
 		return respErr
 	}
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("error response code")
-	}
-	respData, readErr := io.ReadAll(resp.Body)
-	if readErr != nil {
-		return readErr
-	}
 	cfgResult := new(ConfigResult)
-	if err := json.Unmarshal(respData, cfgResult); err != nil {
+	if err := json.Unmarshal([]byte(resp), cfgResult); err != nil {
 		return err
 	}
 	if strings.EqualFold(cfgResult.Code, "0") {

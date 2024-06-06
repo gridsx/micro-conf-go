@@ -9,7 +9,7 @@ var (
 	clientMap = sync.Map{}
 )
 
-func NewClient(serviceName, group, metaServers string, filters, headers map[string]string,
+func NewClient(serviceName, group, metaServers, token string, filters, headers map[string]string,
 	refreshPeriod, timeout, rateLimit int) *Client {
 	service, ok := clientMap.Load(serviceName)
 	if ok && service != nil {
@@ -33,7 +33,7 @@ func NewClient(serviceName, group, metaServers string, filters, headers map[stri
 		Filters:       filters,
 		instNum:       atomic.Int32{},
 	}
-	svc.init(metaServers)
+	svc.init(metaServers, token)
 	clientMap.Store(serviceName, svc)
 	return svc
 }
