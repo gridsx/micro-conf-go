@@ -113,11 +113,17 @@ func demo() {
 	resp, err := orderService.Get(context.Background(), "/api/ping")
 	orderService.Post(context.Background(), "/api/ping")
 	orderService.Put(context.Background(), "/api/ping")
-
 }
 ```
 
 > 注: 本包支持，多个服务的注册，只需要多份配置即可， 配置上不能有冲突，比如端口不能冲突， app名称不能冲突
+
+
+## 贡献 （how to contribute)
+
+由于目前此项目仅有我一个人在维护和跟进， 如果需要新的功能，可能需要比较长的时间开发。 如果您对这个项目有兴趣，欢迎[发邮件](winjeg@qq.com)联系我
+
+Contact me via my [email](winjeg@qq.com)
 
 ## 附录：与配置中心相连的API
 
