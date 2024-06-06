@@ -1,6 +1,6 @@
 module github.com/grdisx/micro-conf-go
 
-go 1.22.3
+go 1.18.1
 
 require (
 	github.com/gorilla/websocket v1.5.1

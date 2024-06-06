@@ -3,7 +3,6 @@ package mc
 import (
 	"context"
 	"fmt"
-	"github.com/grdisx/micro-conf-go/client"
 	"io"
 	"log"
 	"net/http"
@@ -82,7 +81,7 @@ func TestConfig(t *testing.T) {
 	demo := new(DemoStruct)
 
 	ticker := time.Tick(time.Second * 5)
-	orderService := client.GetClient("OrderService")
+	orderService := client1.GetClient("OrderService")
 	count := 3
 	for {
 		select {

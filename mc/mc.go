@@ -23,7 +23,7 @@ type MicroClient struct {
 	clientMap map[string]*client.Client
 }
 
-func (m *MicroClient) GetService(serviceName string) *client.Client {
+func (m *MicroClient) GetClient(serviceName string) *client.Client {
 	if m.clientMap == nil {
 		return nil
 	}
@@ -109,12 +109,14 @@ func (m *MicroClient) acceptConfigChange() {
 
 // 获取服务列表， 拿出来status是UP的，然后进行筛选
 func (m *MicroClient) initClients() {
+	m.clientMap = make(map[string]*client.Client, defaultSize)
 	for _, v := range m.Cfg.Clients {
 		filters := make(map[string]string, defaultSize)
 		filters["tags"] = v.Tags
 		filters["zone"] = v.Zone
-		client.NewClient(v.Name, v.Group, m.Cfg.MetaServers, m.Cfg.Token,
+		cli := client.NewClient(v.Name, v.Group, m.Cfg.MetaServers, m.Cfg.Token,
 			filters, v.Headers, v.Lease, v.Timeout, v.RateLimit)
+		m.clientMap[v.Name] = cli
 	}
 }
 

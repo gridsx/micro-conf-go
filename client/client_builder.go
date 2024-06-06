@@ -1,22 +1,11 @@
 package client
 
 import (
-	"sync"
 	"sync/atomic"
-)
-
-var (
-	clientMap = sync.Map{}
 )
 
 func NewClient(serviceName, group, metaServers, token string, filters, headers map[string]string,
 	refreshPeriod, timeout, rateLimit int) *Client {
-	service, ok := clientMap.Load(serviceName)
-	if ok && service != nil {
-		if svc, ok := service.(*Client); ok {
-			return svc
-		}
-	}
 	if group == "" {
 		group = "default"
 	}
@@ -33,17 +22,9 @@ func NewClient(serviceName, group, metaServers, token string, filters, headers m
 		Filters:       filters,
 		instNum:       atomic.Int32{},
 	}
-	svc.init(metaServers, token)
-	clientMap.Store(serviceName, svc)
-	return svc
-}
-
-func GetClient(serviceName string) *Client {
-	c, ok := clientMap.Load(serviceName)
-	if c != nil && ok {
-		if client, convertOk := c.(*Client); convertOk {
-			return client
-		}
+	err := svc.init(metaServers, token)
+	if err != nil {
+		return nil
 	}
-	return nil
+	return svc
 }
