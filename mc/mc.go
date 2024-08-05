@@ -114,7 +114,7 @@ func (m *MicroClient) initClients() {
 		filters := make(map[string]string, defaultSize)
 		filters["tags"] = v.Tags
 		filters["zone"] = v.Zone
-		cli := client.NewClient(v.Name, v.Group, m.Cfg.MetaServers, m.Cfg.Token,
+		cli := client.DefaultMgr.NewClient(v.Name, v.Group, m.Cfg.MetaServers, m.Cfg.Token,
 			filters, v.Headers, v.Lease, v.Timeout, v.RateLimit)
 		m.clientMap[v.Name] = cli
 	}

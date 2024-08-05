@@ -83,30 +83,30 @@ func (s *Client) choose() (string, error) {
 }
 
 func (s *Client) Get(ctx context.Context, uri string) (*http.Response, error) {
-	return s.request(ctx, http.MethodGet, uri, nil, []string{})
+	return s.Request(ctx, nil, http.MethodGet, uri, nil, []string{})
 }
 
 func (s *Client) GetWithParams(ctx context.Context, uri string, params ...string) (*http.Response, error) {
-	return s.request(ctx, http.MethodGet, uri, nil, params)
+	return s.Request(ctx, nil, http.MethodGet, uri, nil, params)
 }
 
 func (s *Client) Post(ctx context.Context, uri string, body io.Reader, params ...string) (*http.Response, error) {
-	return s.request(ctx, http.MethodPost, uri, body, params)
+	return s.Request(ctx, nil, http.MethodPost, uri, body, params)
 }
 
 func (s *Client) Put(ctx context.Context, uri string, body io.Reader, params ...string) (*http.Response, error) {
-	return s.request(ctx, http.MethodPut, uri, body, params)
+	return s.Request(ctx, nil, http.MethodPut, uri, body, params)
 }
 
 func (s *Client) Delete(ctx context.Context, uri string, body io.Reader, params ...string) (*http.Response, error) {
-	return s.request(ctx, http.MethodDelete, uri, body, params)
+	return s.Request(ctx, nil, http.MethodDelete, uri, body, params)
 }
 
 func (s *Client) Head(uri string) (*http.Response, error) {
 	return s.Client.Head(uri)
 }
 
-func (s *Client) request(ctx context.Context, method, uri string, body io.Reader, params []string) (*http.Response, error) {
+func (s *Client) Request(ctx context.Context, headerMap map[string]string, method, uri string, body io.Reader, params []string) (*http.Response, error) {
 	url := uri
 	if len(params) > 1 {
 		url = url + "?" + joinParams(params)
@@ -117,6 +117,12 @@ func (s *Client) request(ctx context.Context, method, uri string, body io.Reader
 	}
 	url = fmt.Sprintf("http://%s%s", addr, url)
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if len(headerMap) > 0 {
+		for k, v := range headerMap {
+			req.Header.Set(k, v)
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
